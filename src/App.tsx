@@ -15,20 +15,40 @@ function App() {
 	const [playing, setPlaying] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const [metadata, setMetadata] = useState<MetadataType | null>(null);
+	const [duration, setDuration] = useState(0);
+
+	const formatDuration = (seconds: number) => {
+		const hours = Math.floor(seconds / 3600);
+		const minutes = Math.floor((seconds % 3600) / 60);
+		const remainingSeconds = seconds % 60;
+
+		return {
+			hours,
+			minutes,
+			seconds: remainingSeconds,
+		};
+	};
 
 	const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		setPlaying(false);
+		URL.revokeObjectURL(videoRef.current!.src);
+
 		const file = event.target.files?.[0];
 		if (file) {
 			const video = videoRef.current!;
-			video.src = URL.createObjectURL(file);
-			video.load();
+			video.preload = 'metadata';
+
 			setMetadata({
 				Name: file.name,
 				Size: file.size,
 				'Media Format': file.type,
 				'Last Modified': new Date(file.lastModified),
 			});
+
+			video.onloadedmetadata = function () {
+				setDuration(video.duration);
+			};
+			video.src = URL.createObjectURL(file);
 		}
 	};
 
@@ -157,6 +177,23 @@ function App() {
 										);
 									}
 								)}
+								<tr>
+									<td>Duration:</td>
+									<td className="pl-4">
+										{Math.round(
+											formatDuration(duration).hours
+										)}{' '}
+										hours,{' '}
+										{Math.round(
+											formatDuration(duration).minutes
+										)}{' '}
+										minutes,{' '}
+										{Math.round(
+											formatDuration(duration).seconds
+										)}{' '}
+										seconds
+									</td>
+								</tr>
 							</tbody>
 						</table>
 					) : (
