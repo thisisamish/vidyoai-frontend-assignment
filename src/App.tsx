@@ -69,6 +69,16 @@ function App() {
 
 	return (
 		<main className="min-h-screen flex flex-col lg:flex-row items-center justify-center gap-4 p-4">
+			<div className="fixed bottom-0 left-0 sm:max-w-[10%] max-w-[50%] p-2 bg-black rounded-tr-lg text-white">
+				Find this project on{' '}
+				<a
+					className="underline"
+					href="https://github.com/thisisamish/vidyoai-frontend-assignment"
+					target="_blank"
+				>
+					GitHub
+				</a>
+			</div>
 			<section className="flex flex-col gap-4">
 				<div className="border border-zinc-400 rounded-md p-4 flex flex-col gap-2">
 					<label
