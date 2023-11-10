@@ -10,3 +10,5 @@ To run the project locally,
 3. Run `pnpm dev`.
 
 If you don't have `pnpm`, get it [here](https://pnpm.io/). Trust me, it's worth it.
+
+This repo is my submission of frontend assignment for [vidyo.ai](https://vidyo.ai/)'s SELECT 2024 internship. The assignment is available [here](https://github.com/vidyo-ai/frontend-internship-assignment).
