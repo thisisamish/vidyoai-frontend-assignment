@@ -12,6 +12,7 @@ type MetadataType = {
 function App() {
 	const videoRef = useRef<HTMLVideoElement | null>(null);
 	const canvasRef = useRef<HTMLCanvasElement | null>(null);
+	const [videoSrc, setVideoSrc] = useState('');
 	const [playing, setPlaying] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const [metadata, setMetadata] = useState<MetadataType | null>(null);
@@ -31,24 +32,34 @@ function App() {
 
 	const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		setPlaying(false);
-		URL.revokeObjectURL(videoRef.current!.src);
 
+		URL.revokeObjectURL(videoRef.current!.src);
+		videoRef.current!.src = '';
 		const file = event.target.files?.[0];
+
 		if (file) {
 			const video = videoRef.current!;
 			video.preload = 'metadata';
-
-			setMetadata({
-				Name: file.name,
-				Size: file.size,
-				'Media Format': file.type,
-				'Last Modified': new Date(file.lastModified),
-			});
-
+			const videoSource = URL.createObjectURL(file);
+			video.src = videoSource;
 			video.onloadedmetadata = function () {
+				// if (!hasAudio(video)) {
+				// 	console.log(video.src);
+				// 	console.log(video.webkitAudioDecodedByteCount);
+				// 	URL.revokeObjectURL(video.src);
+				// 	// videoRef.current!.src = '';
+				// 	alert('Select a video which has audio.');
+				// } else {
 				setDuration(video.duration);
+				setMetadata({
+					Name: file.name,
+					Size: file.size,
+					'Media Format': file.type,
+					'Last Modified': new Date(file.lastModified),
+				});
+				setVideoSrc(videoSource);
+				// }
 			};
-			video.src = URL.createObjectURL(file);
 		}
 	};
 
@@ -108,7 +119,7 @@ function App() {
 						<button
 							className="absolute inset-0"
 							onClick={() => setPlaying((prev) => !prev)}
-							disabled={loading}
+							disabled={loading || metadata === null}
 						>
 							{/* <svg
 								xmlns="http://www.w3.org/2000/svg"
@@ -149,15 +160,14 @@ function App() {
 					<h2 className="font-semibold text-lg mb-2">
 						Audio Waveform:
 					</h2>
-					<Waveform
-						videoEl={
-							videoRef.current === null
-								? undefined
-								: videoRef.current
-						}
-						loading={loading}
-						setLoading={setLoading}
-					/>
+					{videoRef.current && (
+						<Waveform
+							videoEl={videoRef.current}
+							loading={loading}
+							setLoading={setLoading}
+							videoSrc={videoSrc}
+						/>
+					)}
 				</div>
 				<div className="border border-zinc-400 rounded-md p-4">
 					<h2 className="font-semibold text-lg mb-2">

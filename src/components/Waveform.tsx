@@ -1,38 +1,44 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import WaveSurfer from 'wavesurfer.js';
 
 interface WaveformProps {
-	videoEl: HTMLMediaElement | undefined;
+	videoEl: HTMLMediaElement;
 	loading: boolean;
 	setLoading: React.Dispatch<React.SetStateAction<boolean>>;
+	videoSrc: string;
 }
 
 export default function Waveform({
 	videoEl,
-	loading,
-	setLoading,
-}: WaveformProps) {
+	videoSrc,
+}: // loading,
+// setLoading,
+WaveformProps) {
 	const waveformContainerRef = useRef<HTMLDivElement>(null);
+	const [ws, setWs] = useState<WaveSurfer | null>(null);
 
 	useEffect(() => {
-		const wavesurfer = WaveSurfer.create({
-			container: waveformContainerRef.current!,
-			waveColor: 'violet',
-			progressColor: 'purple',
-			cursorColor: 'black',
-			cursorWidth: 1,
-			media: videoEl,
-		});
-
-		wavesurfer.on('ready', function () {
-			setLoading(false);
-			wavesurfer.play();
+		console.log('Wavesurfer created!');
+		setWs((prev) => {
+			prev?.destroy();
+			return WaveSurfer.create({
+				container: waveformContainerRef.current!,
+				media: videoEl,
+			});
 		});
 
 		return () => {
-			wavesurfer.destroy();
+			ws?.destroy();
 		};
-	}, [videoEl, loading, setLoading]);
+	}, [videoSrc]);
+
+	useEffect(() => {
+		if (ws) {
+			ws.on('ready', function () {
+				ws.setTime(1);
+			});
+		}
+	}, [ws]);
 
 	return <div ref={waveformContainerRef} className="waveformContainer"></div>;
 }
