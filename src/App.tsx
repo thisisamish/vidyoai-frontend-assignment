@@ -1,13 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import Waveform from './components/Waveform';
 import './App.css';
-
-type MetadataType = {
-	Name: string;
-	Size: number;
-	'Media Format': string;
-	'Last Modified': Date;
-};
+import Metadata from './components/Metadata';
+import { MetadataType } from './types/MetadataType';
 
 function App() {
 	const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -16,19 +11,6 @@ function App() {
 	const [playing, setPlaying] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const [metadata, setMetadata] = useState<MetadataType | null>(null);
-	const [duration, setDuration] = useState(0);
-
-	const formatDuration = (seconds: number) => {
-		const hours = Math.floor(seconds / 3600);
-		const minutes = Math.floor((seconds % 3600) / 60);
-		const remainingSeconds = seconds % 60;
-
-		return {
-			hours,
-			minutes,
-			seconds: remainingSeconds,
-		};
-	};
 
 	const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		setPlaying(false);
@@ -50,12 +32,12 @@ function App() {
 				// 	// videoRef.current!.src = '';
 				// 	alert('Select a video which has audio.');
 				// } else {
-				setDuration(video.duration);
 				setMetadata({
 					Name: file.name,
 					Size: file.size,
 					'Media Format': file.type,
 					'Last Modified': new Date(file.lastModified),
+					Duration: video.duration,
 				});
 				setVideoSrc(videoSource);
 				// }
@@ -79,8 +61,8 @@ function App() {
 	});
 
 	return (
-		<main className="min-h-screen flex flex-col lg:flex-row items-center justify-center gap-4 p-4">
-			<div className="fixed bottom-0 left-0 sm:max-w-[10%] max-w-[50%] p-2 bg-black rounded-tr-lg text-white">
+		<main className="h-screen grid grid-cols-3 grid-rows-4 gap-4 p-4">
+			<div className="fixed bottom-0 right-0 sm:max-w-[10%] max-w-[50%] p-2 bg-black rounded-tl-lg text-white">
 				Find this project on{' '}
 				<a
 					className="underline"
@@ -90,25 +72,9 @@ function App() {
 					GitHub
 				</a>
 			</div>
-			<section className="flex flex-col gap-4">
-				<div className="border border-zinc-400 rounded-md p-4 flex flex-col gap-2">
-					<label
-						htmlFor="videoInput"
-						className="font-semibold text-lg"
-					>
-						Choose a video file to process:
-					</label>
-					<input
-						type="file"
-						id="videoInput"
-						name="videoInput"
-						accept="video/*"
-						multiple={false}
-						onChange={handleFileChange}
-						disabled={loading}
-					/>
-				</div>
-				<div className="border border-zinc-400 rounded-md p-4">
+
+			<section className="col-span-2 row-span-3">
+				<div className="border border-zinc-400 rounded-md p-4 h-full">
 					<video ref={videoRef} loop className="hidden"></video>
 					<div className="relative">
 						<canvas
@@ -155,8 +121,9 @@ function App() {
 					</div>
 				</div>
 			</section>
-			<section className="flex flex-col gap-4">
-				<div className="border border-zinc-400 rounded-md p-4">
+
+			<section className="col-span-1 row-span-2">
+				<div className="border border-zinc-400 rounded-md h-full p-4">
 					<h2 className="font-semibold text-lg mb-2">
 						Audio Waveform:
 					</h2>
@@ -169,56 +136,35 @@ function App() {
 						/>
 					)}
 				</div>
-				<div className="border border-zinc-400 rounded-md p-4">
-					<h2 className="font-semibold text-lg mb-2">
-						Video Metadata:
-					</h2>
-					{metadata ? (
-						<table>
-							<tbody>
-								{Object.entries(metadata).map(
-									([key, value]) => {
-										if (value instanceof Date)
-											value = value.toLocaleString();
-										else if (typeof value === 'number')
-											value = (
-												value /
-												1024 /
-												1024
-											).toFixed(2);
-										return (
-											<tr key={key}>
-												<td>{key}:</td>
-												<td className="pl-4">
-													{value}{' '}
-													{key === 'Size' ? 'MB' : ''}
-												</td>
-											</tr>
-										);
-									}
-								)}
-								<tr>
-									<td>Duration:</td>
-									<td className="pl-4">
-										{Math.round(
-											formatDuration(duration).hours
-										)}{' '}
-										hours,{' '}
-										{Math.round(
-											formatDuration(duration).minutes
-										)}{' '}
-										minutes,{' '}
-										{Math.round(
-											formatDuration(duration).seconds
-										)}{' '}
-										seconds
-									</td>
-								</tr>
-							</tbody>
-						</table>
-					) : (
-						<p>Please select a video file.</p>
-					)}
+			</section>
+
+			<section className="col-span-1 row-span-2 border border-zinc-400 rounded-md p-4 flex justify-center items-center">
+				{metadata ? (
+					<Metadata metadata={metadata} />
+				) : (
+					<p className="opacity-70">
+						Selected video's metadata will be shown here.
+					</p>
+				)}
+			</section>
+
+			<section className="col-span-2 row-span-1">
+				<div className="border border-zinc-400 rounded-md p-4 flex flex-col h-full gap-2">
+					<label
+						htmlFor="videoInput"
+						className="font-semibold text-lg"
+					>
+						Choose a video file to process:
+					</label>
+					<input
+						type="file"
+						id="videoInput"
+						name="videoInput"
+						accept="video/*"
+						multiple={false}
+						onChange={handleFileChange}
+						disabled={loading}
+					/>
 				</div>
 			</section>
 		</main>
